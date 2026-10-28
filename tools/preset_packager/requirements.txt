@@ -1,1 +1,2 @@
-# No external dependencies required
+# Validation before packaging uses the preset validator's dependency.
+-r ../preset_validator/requirements.txt

@@ -69,14 +69,9 @@ See [tools.md](tools.md#preset_packager) for current behaviour and its caveats (
 
 ## Current repository state
 
-`assets/presets/packs/starter_pack/pack.json` references `looks/neutral_film.json` and
-`looks/soft_contrast_film.json`, but the `looks/` directory does not exist yet, and
-`soft_contrast_film.json` sits at the repository root instead of `assets/presets/builtin/`. To fix:
-
-```bash
-git mv soft_contrast_film.json assets/presets/builtin/
-mkdir -p assets/presets/packs/starter_pack/looks
-cp assets/presets/builtin/{neutral_film,soft_contrast_film}.json assets/presets/packs/starter_pack/looks/
-```
-
-(Or use symlinks / have the build copy them, to avoid two sources of truth.)
+`assets/presets/packs/starter_pack/` contains `pack.json` and a `looks/` folder
+with *Neutral Film* and *Soft Contrast Film*, copies of the built-in presets in
+`assets/presets/builtin/`. `tools/preset_validator/validate.py` checks that every
+look a pack lists exists and passes the schema, and the packager refuses to
+package a pack that fails. Keep the copies in sync with the built-ins (or have
+the build copy them) until packs can reference shared looks.

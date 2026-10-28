@@ -1,165 +1,64 @@
+# Color Looks MVP
+
+[![CI](https://github.com/syedjafri06193/color-looks-mvp-v.1/actions/workflows/ci.yml/badge.svg)](https://github.com/syedjafri06193/color-looks-mvp-v.1/actions/workflows/ci.yml)
+
+A film-look colour grading engine for OFX hosts (DaVinci Resolve, Nuke,
+Natron): versioned JSON look presets, a scene-referred OpenColorIO v2 colour
+pipeline, and Metal GPU kernels.
+
+**Status: early foundation (v1).** What exists today is the preset schema
+and two built-in looks, a starter look pack, a minimal OCIO config, the first
+Metal kernel (exposure, pivoted contrast, saturation), and tooling to
+validate and package presets. The engine, OFX plug-in and CPU reference are
+designed but not yet built — see the
+[project status and roadmap](1—Documentation/v1/project-status.md).
+
+## Quick start
+
+Requires CMake 3.22+, a C++17 compiler, OpenColorIO 2.x and Python 3.
+
 ```bash
-color-looks-mvp-v.1/
-├─ README.md
-├─ LICENSE
-├─ .gitignore
-├─ .editorconfig
-├─ .clang-format
-├─ CMakeLists.txt
-├─ cmake/
-│  ├─ Toolchains/
-│  ├─ FindOpenColorIO.cmake
-│  ├─ FindMetal.cmake
-│  └─ CompileShaders.cmake
-├─ third_party/
-│  ├─ ocio/                         # optional vendored; prefer package manager/submodule
-│  ├─ nlohmann_json/                # if used
-│  └─ stb/                          # optional utilities
-├─ docs/
-│  ├─ technical-spec.md
-│  ├─ color-management.md
-│  ├─ look-pipeline.md
-│  ├─ preset-authoring.md
-│  ├─ performance.md
-│  └─ testing.md
-├─ tools/
-│  ├─ preset_validator/
-│  │  ├─ CMakeLists.txt
-│  │  └─ main.cpp
-│  ├─ preset_packager/
-│  │  ├─ main.py                    # optional: zip/sign packs
-│  │  └─ requirements.txt
-│  └─ ocio_inspector/
-│     └─ main.cpp
-├─ assets/
-│  ├─ presets/
-│  │  ├─ builtin/
-│  │  │  ├─ neutral_film.json
-│  │  │  ├─ soft_contrast_film.json
-│  │  │  └─ ...
-│  │  └─ packs/
-│  │     └─ starter_pack/
-│  │        ├─ pack.json
-│  │        └─ looks/
-│  │           ├─ neutral_film.json
-│  │           └─ soft_contrast_film.json
-│  ├─ thumbnails/                   # optional UI thumbnails
-│  └─ ocio/
-│     └─ config.ocio                # optional bundled OCIO config for override workflows
-├─ src/
-│  ├─ common/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/common/Assert.hpp
-│  │  │  ├─ colorlooks/common/Hash.hpp
-│  │  │  ├─ colorlooks/common/Logging.hpp
-│  │  │  ├─ colorlooks/common/Math.hpp
-│  │  │  ├─ colorlooks/common/Span.hpp
-│  │  │  ├─ colorlooks/common/Types.hpp
-│  │  │  └─ colorlooks/common/Version.hpp
-│  │  └─ src/
-│  │     ├─ Hash.cpp
-│  │     ├─ Logging.cpp
-│  │     └─ Version.cpp
-│  ├─ color/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/color/ColorSpaces.hpp
-│  │  │  ├─ colorlooks/color/OCIOManager.hpp
-│  │  │  ├─ colorlooks/color/ToneMap.hpp
-│  │  │  ├─ colorlooks/color/GamutCompress.hpp
-│  │  │  ├─ colorlooks/color/Curves.hpp
-│  │  │  └─ colorlooks/color/Matrix3x3.hpp
-│  │  └─ src/
-│  │     ├─ OCIOManager.cpp
-│  │     ├─ ToneMap.cpp
-│  │     ├─ GamutCompress.cpp
-│  │     ├─ Curves.cpp
-│  │     └─ Matrix3x3.cpp
-│  ├─ presets/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/presets/Preset.hpp
-│  │  │  ├─ colorlooks/presets/PresetIO.hpp
-│  │  │  ├─ colorlooks/presets/PresetSchema.hpp
-│  │  │  └─ colorlooks/presets/PresetVersioning.hpp
-│  │  └─ src/
-│  │     ├─ Preset.cpp
-│  │     ├─ PresetIO.cpp
-│  │     ├─ PresetSchema.cpp
-│  │     └─ PresetVersioning.cpp
-│  ├─ engine/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/engine/LookEngine.hpp
-│  │  │  ├─ colorlooks/engine/RenderGraph.hpp
-│  │  │  ├─ colorlooks/engine/Nodes.hpp
-│  │  │  ├─ colorlooks/engine/Params.hpp
-│  │  │  ├─ colorlooks/engine/Frame.hpp
-│  │  │  ├─ colorlooks/engine/Cache.hpp
-│  │  │  └─ colorlooks/engine/CPUFallback.hpp
-│  │  └─ src/
-│  │     ├─ LookEngine.cpp
-│  │     ├─ RenderGraph.cpp
-│  │     ├─ Nodes.cpp
-│  │     ├─ Params.cpp
-│  │     ├─ Cache.cpp
-│  │     └─ CPUFallback.cpp
-│  ├─ gpu/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/gpu/GPUBackend.hpp
-│  │  │  ├─ colorlooks/gpu/KernelIDs.hpp
-│  │  │  └─ colorlooks/gpu/Dispatch.hpp
-│  │  ├─ metal/
-│  │  │  ├─ include/
-│  │  │  │  ├─ colorlooks/gpu/metal/MetalBackend.hpp
-│  │  │  │  └─ colorlooks/gpu/metal/MetalPipelineCache.hpp
-│  │  │  ├─ src/
-│  │  │  │  ├─ MetalBackend.mm
-│  │  │  │  ├─ MetalPipelineCache.mm
-│  │  │  │  └─ MetalUtils.mm
-│  │  │  └─ shaders/
-│  │  │     ├─ Common.metal
-│  │  │     ├─ ColorOps.metal
-│  │  │     ├─ ToneMap.metal
-│  │  │     ├─ Grain.metal
-│  │  │     ├─ GamutCompress.metal
-│  │  │     └─ PipelineKernels.metal
-│  │  └─ cpu/
-│  │     └─ (optional) reference kernels
-│  ├─ ofx/
-│  │  ├─ include/
-│  │  │  ├─ colorlooks/ofx/OfxPlugin.hpp
-│  │  │  ├─ colorlooks/ofx/ParamsBinding.hpp
-│  │  │  └─ colorlooks/ofx/HostUtils.hpp
-│  │  └─ src/
-│  │     ├─ OfxMain.cpp
-│  │     ├─ OfxPlugin.cpp
-│  │     ├─ ParamsBinding.cpp
-│  │     └─ HostUtils.cpp
-│  └─ ui/
-│     ├─ include/
-│     │  ├─ colorlooks/ui/ParamModel.hpp
-│     │  └─ colorlooks/ui/LookSelector.hpp
-│     └─ src/
-│        ├─ ParamModel.cpp
-│        └─ LookSelector.cpp
-├─ tests/
-│  ├─ CMakeLists.txt
-│  ├─ test_ramps.cpp
-│  ├─ test_gamut.cpp
-│  ├─ test_tonemap.cpp
-│  ├─ test_presets.cpp
-│  └─ fixtures/
-│     ├─ ramps.exr
-│     ├─ chart.exr
-│     └─ skin.exr
-├─ packaging/
-│  ├─ ofx/
-│  │  ├─ Info.plist
-│  │  ├─ manifest.json
-│  │  ├─ install_mac.sh
-│  │  └─ bundle_layout.md
-│  └─ codesign/
-│     └─ entitlements.plist
-└─ ci/
-   ├─ build_macos.yml
-   ├─ test.yml
-   └─ release.yml
-'''
+# macOS:  brew install opencolorio cmake
+# Ubuntu: sudo apt install libopencolorio-dev cmake
+pip install -r tools/preset_validator/requirements.txt
+
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build                       # validates every preset and pack
+
+./build/tools/ocio_inspector/ocio_inspector assets/ocio/config.ocio
+python3 tools/preset_validator/validate.py assets/presets
+python3 tools/preset_packager/main.py assets/presets/packs/starter_pack starter_pack.zip
+```
+
+Metal is only enabled on macOS; the tools and checks build on any OS.
+
+## Repository layout
+
+```
+.
+├── 1—Documentation/          all documentation (start with its README)
+├── assets/
+│   ├── presets/builtin/      Neutral Film, Soft Contrast Film
+│   ├── presets/packs/        starter_pack (pack.json + looks/)
+│   └── ocio/config.ocio      bundled OCIO v2 config (lin_rec709, sRGB, raw)
+├── src/
+│   ├── presets/schema/       lookpreset.schema.json (JSON Schema 2020-12)
+│   └── gpu/metal/shaders/    Common.metal, PipelineKernels.metal
+├── tools/
+│   ├── preset_validator/     validate.py (schema + pack checks)
+│   ├── preset_packager/      validated look-pack zips
+│   └── ocio_inspector/       OCIO config validation and listing
+└── cmake/                    FindOpenColorIO, FindMetal, CompileShaders
+```
+
+## Documentation
+
+All documentation lives in [`1—Documentation/`](1—Documentation/README.md):
+architecture, colour management, the look pipeline, preset authoring and
+schema reference, the Metal backend, OFX integration, packaging, testing and
+the roadmap.
+
+## License
+
+Proprietary — see [LICENSE](LICENSE).

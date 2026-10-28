@@ -1,8 +1,34 @@
 ocio_profile_version: 2
 
+# Minimal bundled config for override workflows: a scene-linear Rec.709
+# working space and an sRGB display. Hosts normally supply their own config
+# (ACES, Resolve-managed); this exists so the plug-in has something correct
+# to fall back on.
+
+environment: {}
+search_path: ""
+strictparsing: true
+luma: [0.2126, 0.7152, 0.0722]
+
 roles:
-  scene_linear: lin_rec709
+  default: lin_rec709
   reference: lin_rec709
+  scene_linear: lin_rec709
+  rendering: lin_rec709
+  compositing_linear: lin_rec709
+  color_timing: lin_rec709
+  color_picking: srgb_display
+  texture_paint: srgb_display
+  matte_paint: srgb_display
+  data: raw
+
+displays:
+  sRGB:
+    - !<View> { name: Standard, colorspace: srgb_display }
+    - !<View> { name: Raw, colorspace: raw }
+
+active_displays: [sRGB]
+active_views: [Standard, Raw]
 
 colorspaces:
 
@@ -11,16 +37,29 @@ colorspaces:
     family: linear
     equalitygroup: ""
     bitdepth: 32f
+    description: Scene-linear, Rec.709 primaries, D65
     isdata: false
-    allocation: uniform
-    to_reference: !<MatrixTransform> { matrix: [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1] }
-    from_reference: !<MatrixTransform> { matrix: [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1] }
+    allocation: lg2
+    allocationvars: [-15, 6, 0.00390625]
 
+  # IEC 61966-2-1 sRGB: the piecewise curve (linear toe below 0.0031308,
+  # 1/2.4 power above), not a pure 2.2 gamma. A 2.2 gamma is close in the
+  # mid-tones but visibly wrong in the shadows.
   - !<ColorSpace>
     name: srgb_display
     family: display
+    equalitygroup: ""
     bitdepth: 32f
+    description: sRGB display encoding (IEC 61966-2-1), Rec.709 primaries
     isdata: false
     allocation: uniform
-    to_reference: !<ExponentTransform> { value: [2.2,2.2,2.2,1] }
-    from_reference: !<ExponentTransform> { value: [0.4545,0.4545,0.4545,1] }
+    from_scene_reference: !<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055, direction: inverse}
+
+  - !<ColorSpace>
+    name: raw
+    family: utility
+    equalitygroup: ""
+    bitdepth: 32f
+    description: Non-color data; never color-converted
+    isdata: true
+    allocation: uniform

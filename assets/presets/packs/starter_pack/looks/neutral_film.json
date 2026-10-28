@@ -1,0 +1,79 @@
+{
+  "schema": "com.clientofaxioms.colorlooks.lookpreset",
+  "schema_version": 1,
+  "id": "neutral_film",
+  "name": "Neutral Film",
+  "description": "Clean film-like base with gentle highlight roll-off.",
+  "author": "client of AXIOMS",
+  "created_utc": "2026-02-15T00:00:00Z",
+  "tags": ["film", "neutral", "base"],
+
+  "defaults": {
+    "exposure_stops": 0.0,
+    "contrast": 1.05,
+    "pivot": 0.18,
+    "saturation": 1.0,
+    "warm_cool": 0.0,
+    "shadow_tint": [0.0, 0.0, 0.0],
+    "highlight_tint": [0.0, 0.0, 0.0],
+    "film_strength": 0.8,
+    "grain_amount": 0.15,
+    "halation_amount": 0.0
+  },
+
+  "pipeline": {
+    "working_space": {
+      "type": "ocio",
+      "config": "builtin_or_host",
+      "input": "host_input",
+      "working": "scene_linear",
+      "output": "host_output"
+    },
+
+    "tone_map": {
+      "model": "filmic_v1",
+      "shoulder_strength": 0.6,
+      "toe_strength": 0.2,
+      "preserve_hue": true
+    },
+
+    "film_matrix": {
+      "enabled": true,
+      "matrix_3x3": [
+        [1.0000, 0.0100, 0.0050],
+        [0.0050, 1.0000, 0.0100],
+        [0.0100, 0.0050, 1.0000]
+      ],
+      "strength": 0.7
+    },
+
+    "curves": {
+      "enabled": true,
+      "hue_vs_sat": [],
+      "hue_vs_hue": [],
+      "luma_vs_sat": []
+    },
+
+    "gamut_compress": {
+      "enabled": true,
+      "method": "neutral_axis",
+      "strength": 0.5
+    },
+
+    "grain": {
+      "enabled": true,
+      "model": "procedural_v1",
+      "size": 0.45,
+      "colorful": 0.35,
+      "shadows_boost": 0.2,
+      "highlights_rolloff": 0.7
+    },
+
+    "halation": {
+      "enabled": false,
+      "threshold": 1.2,
+      "radius": 6.0,
+      "strength": 0.25
+    }
+  }
+}
