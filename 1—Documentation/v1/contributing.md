@@ -49,5 +49,5 @@ Areas: `engine`, `color`, `gpu`, `presets`, `ofx`, `ui`, `tools`, `looks`, `docs
 
 ## Documentation
 
-Update the relevant `docs/` page in the same PR as the behaviour change, and move items in
+Update the relevant `1—Documentation/` page in the same PR as the behaviour change, and move items in
 [project-status.md](project-status.md) from *Planned* to *Implemented*.

@@ -28,7 +28,6 @@ Welcome to the Color Looks Engine documentation. Pick a path based on what you n
 - [Project status & roadmap](project-status.md)
 - [Contributing](contributing.md)
 - [Glossary](glossary.md)
-- [Changelog](../CHANGELOG.md)
 
 ## Conventions used in these docs
 

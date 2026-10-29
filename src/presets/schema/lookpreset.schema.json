@@ -121,7 +121,8 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
-      "items": [{ "type": "number" }, { "type": "number" }]
+      "prefixItems": [{ "type": "number" }, { "type": "number" }],
+      "items": false
     },
 
     "curves": {

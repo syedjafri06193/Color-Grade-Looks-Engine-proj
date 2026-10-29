@@ -1,0 +1,64 @@
+{
+  "schema": "com.clientofaxioms.colorlooks.lookpreset",
+  "schema_version": 1,
+  "id": "soft_contrast_film",
+  "name": "Soft Contrast Film",
+  "description": "Low-contrast cinematic look with lifted shadows.",
+  "author": "client of AXIOMS",
+  "tags": ["film", "soft", "vintage"],
+
+  "defaults": {
+    "exposure_stops": 0.0,
+    "contrast": 0.92,
+    "pivot": 0.18,
+    "saturation": 0.95,
+    "warm_cool": 0.05,
+    "shadow_tint": [0.02, 0.0, -0.02],
+    "highlight_tint": [0.0, 0.01, 0.02],
+    "film_strength": 0.9,
+    "grain_amount": 0.25,
+    "halation_amount": 0.05
+  },
+
+  "pipeline": {
+    "working_space": {
+      "type": "ocio",
+      "config": "builtin_or_host",
+      "input": "host_input",
+      "working": "scene_linear",
+      "output": "host_output"
+    },
+
+    "tone_map": {
+      "model": "filmic_v1",
+      "shoulder_strength": 0.55,
+      "toe_strength": 0.4,
+      "preserve_hue": true
+    },
+
+    "film_matrix": {
+      "enabled": true,
+      "matrix_3x3": [
+        [1.00, 0.02, 0.01],
+        [0.01, 1.00, 0.02],
+        [0.02, 0.01, 1.00]
+      ],
+      "strength": 0.85
+    },
+
+    "curves": { "enabled": false, "hue_vs_sat": [], "hue_vs_hue": [], "luma_vs_sat": [] },
+
+    "gamut_compress": { "enabled": true, "method": "neutral_axis", "strength": 0.6 },
+
+    "grain": {
+      "enabled": true,
+      "model": "procedural_v1",
+      "size": 0.55,
+      "colorful": 0.4,
+      "shadows_boost": 0.3,
+      "highlights_rolloff": 0.8
+    },
+
+    "halation": { "enabled": true, "threshold": 1.1, "radius": 8.0, "strength": 0.15 }
+  }
+}

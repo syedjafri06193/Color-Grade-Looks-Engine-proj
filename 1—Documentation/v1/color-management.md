@@ -59,31 +59,21 @@ A deliberately minimal OCIO v2 config for override/testing workflows:
 
 | Colour space | Family | Definition |
 |--------------|--------|-----------|
-| `lin_rec709` | linear | Identity to reference. Rec.709 primaries, D65, linear |
-| `srgb_display` | display | to_reference: power 2.2; from_reference: power 0.4545 |
+| `lin_rec709` | linear | Reference space. Rec.709 primaries, D65, scene-linear |
+| `srgb_display` | display | IEC 61966-2-1 sRGB: `ExponentWithLinearTransform {gamma: 2.4, offset: 0.055}`, applied once in the inverse direction for an exact round trip |
+| `raw` | utility | `isdata: true` — never colour-converted |
 
-Roles: `scene_linear` and `reference` → `lin_rec709`.
+Roles: `default`, `reference`, `scene_linear`, `rendering`, `compositing_linear` and
+`color_timing` → `lin_rec709`; `color_picking`, `texture_paint`, `matte_paint` →
+`srgb_display`; `data` → `raw`.
 
-### Limitations and recommended improvements
+Display `sRGB` with views `Standard` (`srgb_display`) and `Raw` (`raw`); both are active.
 
-* **2.2 power ≠ sRGB.** The true sRGB transfer has a linear toe; use
-  `!<ExponentWithLinearTransform> {gamma: 2.4, offset: 0.055}` for exact sRGB.
-* **Inverse by explicit 0.4545** introduces rounding (1/2.2 = 0.454545…). Prefer one transform with
-  `direction: inverse` for exact round-trips.
-* **Missing `displays`/`views`/`active_displays`.** OCIO v2 configs normally declare at least one
-  display and view; some tools reject or warn on configs without them. Add:
+The earlier version used a pure 2.2 power (visibly wrong in the shadows), an explicit
+0.4545 inverse (rounding error on round-trips), no displays or views, and only two roles;
+all four are fixed. `ocio_inspector assets/ocio/config.ocio` validates the file and runs
+in CI.
 
-```yaml
-displays:
-  sRGB:
-    - !<View> {name: Standard, colorspace: srgb_display}
-active_displays: [sRGB]
-active_views: [Standard]
-```
-
-* **Missing common roles** (`default`, `data`, `color_picking`, `color_timing`, `compositing_log`).
-  Add at least `default: lin_rec709` and a `data` raw space.
-* Run `ociocheck --iconfig assets/ocio/config.ocio` after editing.
 
 ## 5. Working with ACES
 

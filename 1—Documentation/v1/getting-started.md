@@ -52,29 +52,13 @@ cmake --build build -j
 * `cmake/FindMetal.cmake` locates `Metal`, `Foundation` and `QuartzCore` frameworks and exposes the
   interface target **`Metal::Metal`**.
 
-## Known build issues
+## Build notes
 
-The current tree does not configure out of the box. Apply these fixes (they are also listed in
-[project-status.md](project-status.md#known-issues)).
+The tree configures and builds on macOS, Linux and Windows. Metal (and
+Objective-C++) are only enabled on Apple platforms; elsewhere the tools and
+the preset checks still build and run.
 
-**1. `tools/ocio_inspector` has no `CMakeLists.txt`.** `tools/CMakeLists.txt` calls
-`add_subdirectory(ocio_inspector)`, which errors. Add:
-
-```cmake
-# tools/ocio_inspector/CMakeLists.txt
-add_executable(ocio_inspector main.cpp)
-target_link_libraries(ocio_inspector PRIVATE OpenColorIO::OpenColorIO)
-```
-
-**2. `OCIO` namespace is undefined in `ocio_inspector/main.cpp`.** OCIO's public namespace is
-versioned (`OpenColorIO_v2_3` etc.); add the conventional alias after the include:
-
-```cpp
-#include <OpenColorIO/OpenColorIO.h>
-namespace OCIO = OCIO_NAMESPACE;
-```
-
-**3. Homebrew on Apple silicon.** If OCIO is not found, pass
+If OpenColorIO is not found with Homebrew on Apple silicon, pass
 `-DCMAKE_PREFIX_PATH=$(brew --prefix)`.
 
 ## 4. Compile Metal shaders
@@ -107,20 +91,15 @@ xcrun -sdk macosx metallib /tmp/PipelineKernels.air -o /tmp/PipelineKernels.meta
 # Prints the linked OpenColorIO version
 ./build/tools/ocio_inspector/ocio_inspector
 
-# Validate a preset (schema validation is a TODO — see tools.md)
-./build/tools/preset_validator/preset_validator assets/presets/builtin/neutral_film.json
+# Validate every preset and pack against the schema
+pip install -r tools/preset_validator/requirements.txt
+python3 tools/preset_validator/validate.py assets/presets
 
 # Zip a look pack
 python3 tools/preset_packager/main.py assets/presets/packs/starter_pack starter_pack.zip
 ```
 
-Until `preset_validator` implements schema checks, validate with any draft-2020-12 validator:
-
-```bash
-pip install check-jsonschema
-check-jsonschema --schemafile src/presets/schema/lookpreset.schema.json \
-    assets/presets/builtin/*.json soft_contrast_film.json
-```
+`ctest` runs the same check (`presets_match_schema`).
 
 ## 6. Editor setup
 

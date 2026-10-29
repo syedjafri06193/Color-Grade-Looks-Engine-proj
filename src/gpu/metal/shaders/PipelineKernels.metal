@@ -34,5 +34,11 @@ kernel void ColorLooks_BasicStage(
     // Safety floor only (avoid negatives; don’t hard clamp highs in final pipeline)
     rgb = max(rgb, float3(0.0));
 
+    // The output is half precision: values above 65504 (the largest finite
+    // half) would be written as +inf at extreme exposure/contrast, and inf
+    // poisons every later stage. Clamp to the half range; this only touches
+    // values that were already unrepresentable.
+    rgb = min(rgb, float3(65504.0));
+
     outTex.write(half4(half3(rgb), half(a)), gid);
 }

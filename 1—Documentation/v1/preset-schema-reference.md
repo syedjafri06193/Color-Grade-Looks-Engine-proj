@@ -1,6 +1,6 @@
 # Preset Schema Reference (v1)
 
-Authoritative source: [`src/presets/schema/lookpreset.schema.json`](../src/presets/schema/lookpreset.schema.json)
+Authoritative source: [`src/presets/schema/lookpreset.schema.json`](../../src/presets/schema/lookpreset.schema.json)
 (JSON Schema draft 2020-12, `$id` `https://schemas.clientofaxioms/color-looks/lookpreset.schema.json`).
 
 Every object in the schema sets `additionalProperties: false` — **unknown keys are errors**,

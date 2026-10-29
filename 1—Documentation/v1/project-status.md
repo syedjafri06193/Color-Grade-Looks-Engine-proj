@@ -6,44 +6,51 @@ Snapshot of the repository as of October 2026.
 
 | Area | Item |
 |------|------|
-| Build | Root `CMakeLists.txt` (C++17, OBJCXX, OCIO + Metal required, tests option) |
+| Build | Root `CMakeLists.txt` (C++17; OCIO required; Metal + OBJCXX on Apple only; `ctest` preset check) |
 | Build | `FindOpenColorIO.cmake`, `FindMetal.cmake`, `CompileShaders.cmake` |
 | Presets | JSON Schema v1 (`lookpreset.schema.json`) |
 | Presets | Built-in looks: *Neutral Film*, *Soft Contrast Film* |
-| Presets | Starter pack manifest (`pack.json`) |
-| Colour | Minimal OCIO v2 config (`lin_rec709`, `srgb_display`) |
+| Presets | Starter pack (`pack.json` + `looks/`) |
+| Colour | Minimal OCIO v2 config: `lin_rec709`, exact sRGB display, `raw`; roles, display and views |
 | GPU | `Common.metal` uniform struct + helpers |
-| GPU | `ColorLooks_BasicStage`: exposure, pivoted log contrast, saturation |
-| Tools | `ocio_inspector` (prints version), `preset_validator` (stub), `preset_packager` (zip) |
-| Repo | `.clang-format`, `.editorconfig`, `.gitignore`, proprietary `LICENSE` |
+| GPU | `ColorLooks_BasicStage`: exposure, pivoted log contrast, saturation; output clamped to the half range |
+| Tools | `ocio_inspector` (version + config validation), `validate.py` (schema + pack checks), `preset_packager` (validated, rooted, deflated zip) |
+| Repo | `.clang-format`, `.editorconfig`, `.gitignore`, proprietary `LICENSE`, GitHub Actions CI |
 
 ## Known issues
 
 | # | Issue | Impact | Fix |
 |---|-------|--------|-----|
-| 1 | `tools/ocio_inspector/CMakeLists.txt` missing | CMake configure fails | Add file ([getting-started](getting-started.md#known-build-issues)) |
-| 2 | `OCIO` namespace undefined in `ocio_inspector/main.cpp` | Compile error | `namespace OCIO = OCIO_NAMESPACE;` |
-| 3 | `preset_validator` never validates | False confidence | Implement schema validation ([tools](tools.md#preset_validator)) |
-| 4 | `soft_contrast_film.json` at repo root | Not found by builtin loaders | Move to `assets/presets/builtin/` |
-| 5 | `starter_pack/looks/` missing | Pack references dead paths | Add looks ([look-packs](look-packs.md#current-repository-state)) |
-| 6 | `curvePoint` uses tuple-form `items` under draft 2020-12 | Point values not type-checked | Use `prefixItems` |
-| 7 | OCIO config: 2.2 gamma labelled sRGB, no displays/views, few roles | Inaccurate sRGB; some tools warn | See [colour management §4](color-management.md#4-the-bundled-config-assetsocioconfigocio) |
-| 8 | `preset_packager` stores full input path in archive, no compression | Awkward pack archives | See [tools](tools.md#preset_packager) |
-| 9 | Luma weights hard-coded to Rec.709 | Slight saturation error in ACEScg | Pass weights from OCIO |
-| 10 | Kernel can overflow `half` on write | `inf` pixels at extreme contrast/exposure | Clamp to 65504 before half write |
-| 11 | `LICENSE` file contains markdown wrapper and an unclosed code fence | Cosmetic | Keep plain text only |
-| 12 | Empty `1—Documentation/README.md` folder (em-dash in name) | Confusing, awkward in shells | Remove; docs live in `docs/` |
-| 13 | Root `README.md` was a tree in an unclosed code fence | Poor landing page | Replaced by new README |
-| 14 | `ci/` workflows outside `.github/workflows/` | Won't run on GitHub Actions | Move or call |
-| 15 | `preset_validator` links OCIO unnecessarily | Extra dependency | Drop or use for name checks |
+| 9 | Luma weights hard-coded to Rec.709 in `Common.metal` | Slight saturation error in ACEScg | Pass weights from OCIO (`getDefaultLumaCoefs`) through the params struct |
+| 16 | C++ `preset_validator` is a placeholder | Native validation pending; the binary exits 2 and points to `validate.py` | Embed the schema and validate natively |
+
+### Fixed
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 1 | `tools/ocio_inspector/CMakeLists.txt` missing | Added |
+| 2 | `OCIO` namespace undefined | `namespace OCIO = OCIO_NAMESPACE;` |
+| 3 | `preset_validator` never validated | `tools/preset_validator/validate.py`; the C++ stub no longer reports false success |
+| 4 | `soft_contrast_film.json` at repo root | Moved to `assets/presets/builtin/` |
+| 5 | `starter_pack/looks/` missing | Added; packs are checked for dead references |
+| 6 | `curvePoint` tuple-form `items` | `prefixItems` + `items: false` |
+| 7 | OCIO config: 2.2 gamma, no displays/views, few roles | Exact sRGB, display + views, full role set |
+| 8 | `preset_packager` full paths, no compression | Rooted at the pack folder, `ZIP_DEFLATED`, validates first |
+| 10 | Kernel could overflow `half` on write | Clamp to 65504 before the half write |
+| 11 | `LICENSE` wrapped in markdown | Plain text (wording unchanged) |
+| 12 | Empty `1—Documentation/README.md` | Now the documentation index; superseded `docs/` stubs removed |
+| 13 | Root README was a tree in an unclosed code fence | Rewritten |
+| 14 | No CI | `.github/workflows/ci.yml` (Linux + macOS) |
+| 15 | `preset_validator` linked OCIO unnecessarily | Dropped |
+| — | CMake required Metal/OBJCXX on every OS | Apple-only; tools build anywhere |
 
 ## Roadmap
 
 ### Milestone 1 — Foundations
-- Fix known issues 1–8
+- ~~Fix known issues 1–8~~ (done)
 - `common`, `presets` modules (load, validate, version)
 - `color` CPU reference: exposure, contrast, matrix, saturation, balance, tone map, gamut
-- Unit tests + fixtures; schema check in CI
+- Unit tests + fixtures (schema check in CI: done)
 
 ### Milestone 2 — GPU look graph
 - Fused Metal kernel for stages 2–9 with function constants
