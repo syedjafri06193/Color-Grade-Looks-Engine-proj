@@ -59,6 +59,43 @@ architecture, colour management, the look pipeline, preset authoring and
 schema reference, the Metal backend, OFX integration, packaging, testing and
 the roadmap.
 
+<!-- project-metrics:start -->
+## Project Metrics
+
+[![Stars](https://img.shields.io/github/stars/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj/stargazers) [![Forks](https://img.shields.io/github/forks/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj/forks) [![Open issues](https://img.shields.io/github/issues/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj/issues) [![Last commit](https://img.shields.io/github/last-commit/syedjafri06193/Color-Grade-Looks-Engine-proj/improvements?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj/commits/improvements) [![Commits](https://img.shields.io/github/commit-activity/t/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj/commits/improvements) [![Top language](https://img.shields.io/github/languages/top/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj) [![Repo size](https://img.shields.io/github/repo-size/syedjafri06193/Color-Grade-Looks-Engine-proj?style=flat-square)](https://github.com/syedjafri06193/Color-Grade-Looks-Engine-proj)
+
+### Code
+
+| Metric | Value |
+|---|---|
+| Lines of code | 201 |
+| Source files | 10 |
+| Tracked files | 48 |
+| Documentation | 21 Markdown files (12,648 words) |
+| Commits | 38 |
+| Contributors | 1 |
+| Active | 2026-02-15 → 2026-10-28 |
+
+| Language | Lines | Share |
+|---|---:|---:|
+| Python | 93 | 46.3% |
+| Metal | 45 | 22.4% |
+| CMake | 34 | 16.9% |
+| C++ | 29 | 14.4% |
+
+### Performance
+
+| Metric | Result |
+|---|---|
+| GPU time per frame, 1080p, all stages | < 2 ms (M-series) |
+| GPU time per frame, 4K UHD | < 8 ms |
+| Preset load + validation | < 10 ms |
+
+<sub>Design budgets (targets, not yet measured), from [`1—Documentation/v1/performance.md`](1%E2%80%94Documentation/v1/performance.md).</sub>
+
+<sub>Code stats as of 2026-10-28, counted with pygount (comments and blank lines excluded). Badges update live.</sub>
+<!-- project-metrics:end -->
+
 ## License
 
 Proprietary — see [LICENSE](LICENSE).
